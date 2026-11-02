@@ -1,5 +1,5 @@
 // ランログ Service Worker：アプリ本体をキャッシュしてオフラインでも起動できるようにする
-const CACHE = 'runlog-v1.0.0';
+const CACHE = 'runlog-v1.1.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
   './vendor/leaflet.js', './vendor/leaflet.css', './vendor/chart.umd.js',

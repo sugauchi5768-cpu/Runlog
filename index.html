@@ -80,6 +80,33 @@ nav button.on{color:var(--acc)}
 .dlg input{width:100%;font:inherit;font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx);margin:4px 0 10px}
 .dlg label{font-size:12px;color:var(--sub)}
 .dlg .row button{min-width:0}
+.sel{width:100%;font:inherit;font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx);margin:4px 0 10px}
+.sm{font-size:12px!important;padding:6px 10px!important;margin-top:6px}
+.bibc{background:var(--card);border:2px solid var(--tx);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.bibt{background:#e8473c;color:#fff;display:flex;justify-content:space-between;padding:5px 12px;font-size:12px;font-weight:700;letter-spacing:.08em}
+.bibb{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;padding:10px 12px 12px}
+.bibb .bh{font-size:18px;display:block}.bibb small{display:block;color:var(--sub);font-size:12px}
+.cd{text-align:right;white-space:nowrap}.cd small{display:block;color:var(--sub);font-size:11px}.cd b{font-size:44px;line-height:1;font-variant-numeric:tabular-nums}.cd span{color:var(--sub);font-size:13px;margin-left:2px}
+.al{display:flex;flex-direction:column;gap:8px;font-size:13px}.al button{align-self:flex-start}
+.wh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.ph{font-size:12px;font-weight:700;color:var(--acc);background:rgba(255,107,53,.15);padding:2px 10px;border-radius:99px;white-space:nowrap}
+.wbig b{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums}.wbig span{color:var(--sub);font-size:18px;margin-left:6px}
+.pbar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.pnote{font-size:13px;background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+table.wk td{text-align:left;padding:7px 4px;font-size:13px}table.wk td:last-child{text-align:right}table.wk small{color:var(--sub)}
+tr.td td{background:rgba(255,107,53,.12)}
+.hint{font-size:12px;color:var(--sub);margin:8px 0 0}
+.hs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.pt{font-size:13px}table.pt th,table.pt td{white-space:nowrap;padding:6px 6px}table.pt td small{color:var(--sub)}
+table.wt th,table.wt td{padding:6px 4px}table.wt tr[data-w]{cursor:pointer}
+tr.phr td{background:var(--bg);color:var(--sub);font-size:11px;font-weight:700;letter-spacing:.06em;text-align:left}
+tr.nr td{border-top:0;padding-top:0;font-size:11px;color:var(--sub);text-align:left;white-space:normal}.mm{color:var(--warn)}
+td.ed{color:#5aa3e6;font-weight:700}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;font-weight:700}
+.pill.ok{color:var(--ok);background:rgba(62,207,142,.15)}.pill.short{color:var(--warn);background:rgba(245,197,66,.15)}.pill.miss{color:var(--bad);background:rgba(255,92,92,.15)}.pill.live{color:var(--acc);background:rgba(255,107,53,.15)}.pill.todo{color:var(--sub)}
+details.card summary{font-size:14px;color:var(--sub);font-weight:600;cursor:pointer}
+ul.rules{font-size:13px;padding-left:18px;margin:10px 0 0;line-height:1.7}
+.ttag{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:0 7px;margin-left:6px}
 label.sw{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:6px 0}
 </style>
 </head>
@@ -111,6 +138,9 @@ label.sw{display:flex;justify-content:space-between;align-items:center;font-size
   <div id="histList"></div>
 </section>
 
+<!-- 計画 -->
+<section class="view" id="v-plan"><div id="planBody"></div></section>
+
 <!-- 実力 -->
 <section class="view" id="v-prog">
   <h2>実力の推移</h2>
@@ -137,6 +167,7 @@ label.sw{display:flex;justify-content:space-between;align-items:center;font-size
   <h2 id="dTitle"></h2>
   <div id="dmap"></div>
   <div class="grid3" id="dStats"></div>
+  <div class="card" style="display:flex;align-items:center;gap:10px;padding:10px 14px"><span style="font-size:13px;color:var(--sub);white-space:nowrap">練習の種類</span><select id="dType" class="sel" style="margin:0"></select></div>
   <div class="card"><h3>1kmラップ</h3><table id="dLaps"></table></div>
 </div>
 
@@ -145,6 +176,7 @@ label.sw{display:flex;justify-content:space-between;align-items:center;font-size
 <nav>
   <button data-v="run" class="on"><i>●</i>計測</button>
   <button data-v="hist"><i>☰</i>履歴</button>
+  <button data-v="plan"><i>⚑</i>計画</button>
   <button data-v="prog"><i>↗</i>実力</button>
 </nav>
 
@@ -326,13 +358,14 @@ $('bPause').onclick=()=>{
 };
 $('bStop').onclick=async()=>{
   if(!R)return;
-  const a=await ask('ランニングを終了しますか？\n距離 '+km(R.dist)+' km ／ '+fmtT(elapsed()),{ok:'保存して終了',alt:'破棄',no:'続ける'});
+  const a=await ask('ランニングを終了しますか？\n距離 '+km(R.dist)+' km ／ '+fmtT(elapsed()),{body:'<label>練習の種類</label>'+typeSel('sType',guessType(R.dist)),ok:'保存して終了',alt:'破棄',no:'続ける'});
   if(!a)return;
+  const rtype=a==='ok'?$('sType').value:'ジョグ';
   if(a==='alt'){if(await ask('この計測を保存せずに破棄しますか？',{ok:'破棄する'}))finish();return}
   if(R.status==='running'){R.accMs+=Date.now()-R.resumeAt;R.status='paused'}
   const total=R.accMs/1000;
   runs.push({id:Date.now(),start:R.start,dist:Math.round(R.dist),time:Math.round(total),
-    laps:R.laps.map(x=>Math.round(x*10)/10),track:R.segs.filter(s=>s.length>1)});
+    laps:R.laps.map(x=>Math.round(x*10)/10),track:R.segs.filter(s=>s.length>1),type:rtype});
   saveRuns();speak('お疲れさまでした。'+km(R.dist)+'キロ');
   const id=runs[runs.length-1].id;finish();showView('hist');openDetail(id);
 };
@@ -348,6 +381,156 @@ setInterval(persist,5000);
   setTimeout(()=>notify('前回の計測を一時停止状態で復元しました。「再開」で続きから計測できます。'),300);
 })();
 
+/* ---------- 福岡マラソン ロードマップ（計画と実績） ---------- */
+const PKEY='runlog.plan';
+const TYPES=['ジョグ','ロング走','変化走','本番ペース走','30km走','大会','ウォーク','その他'];
+const PH=['土台期','距離延長期','夏の維持期','強化期','調整期'];
+// [週, 期index, 目標km, ロング走km, 節目メモ]
+const BASE=[[1,0,22,7,'ジョグ中心・ペース7分で統一'],[2,0,24,8,''],[3,0,26,9,''],[4,0,21,7,'回復週'],[5,0,27,10,''],[6,0,29,10,'変化走を開始'],[7,0,31,11,''],[8,0,24,8,'回復週（年末年始）'],[9,0,30,11,''],[10,0,32,12,''],[11,0,34,12,''],[12,0,27,9,'回復週'],[13,0,34,13,''],
+[14,1,36,14,''],[15,1,38,15,''],[16,1,40,16,''],[17,1,32,12,'回復週'],[18,1,40,17,''],[19,1,42,18,''],[20,1,34,21.1,'ハーフ大会で実力確認'],[21,1,36,12,'大会後の回復'],[22,1,42,18,''],[23,1,44,19,''],[24,1,45,20,'エントリー準備（4/20頃〜）'],[25,1,36,14,'回復週'],[26,1,42,18,''],
+[27,2,42,18,''],[28,2,44,19,''],[29,2,45,20,'エントリー締切（5/20頃）を確認'],[30,2,36,15,'回復週'],[31,2,44,20,''],[32,2,45,20,''],[33,2,46,21,''],[34,2,37,15,'回復週'],[35,2,40,16,'抽選結果（6月末）・暑い時期は朝4〜5時台に'],[36,2,42,18,''],[37,2,43,18,''],[38,2,34,14,'回復週'],[39,2,42,18,''],[40,2,44,20,''],[41,2,45,22,''],[42,2,36,15,'回復週'],[43,2,44,22,''],
+[44,3,48,24,'本番仕様へ・本番用シューズを用意'],[45,3,52,25,''],[46,3,55,20,'本番ペース走20km'],[47,3,44,18,'回復週'],[48,3,56,28,''],[49,3,58,30,'30km走①'],[50,3,50,20,'本番ペース走20km'],[51,3,56,30,'30km走②（大会3週前）'],
+[52,4,42,20,'調整：距離7割'],[53,4,30,15,'調整：距離5割'],[54,4,57.2,42.2,'大会週：ジョグ15km＋本番']];
+const NW=BASE.length,DMS=864e5;
+let plan=ls(PKEY,null)||{};
+function planInit(){plan.race=plan.race||'2027-11-14';plan.goal=plan.goal||18000;plan.ov=plan.ov||{};plan.wm=plan.wm||{};plan.done=plan.done||{}}
+planInit();
+function savePlan(){lsSet(PKEY,plan)}
+const ymdU=s=>{const[y,m,d]=s.split('-').map(Number);return Date.UTC(y,m-1,d)};
+const uStr=t=>{const d=new Date(t);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())};
+function pStart(){const r=ymdU(plan.race),dow=(new Date(r).getUTCDay()+6)%7;return r-dow*DMS-(NW-1)*7*DMS}
+const wkOf=dk=>Math.floor((ymdU(dk)-pStart())/(7*DMS))+1;
+const wkStart=w=>uStr(pStart()+(w-1)*7*DMS);
+const mdS=s=>{const[,m,d]=s.split('-').map(Number);return m+'/'+d};
+function pw(w){const b=BASE[w-1],o=plan.ov[w]||{};return{w,phase:PH[b[1]],pi:b[1],km:o.km!=null?o.km:b[2],long:o.long!=null?o.long:b[3],note:o.note!=null?o.note:b[4],edited:!!plan.ov[w]}}
+const isRun=r=>r.type!=='ウォーク';
+function pAgg(){const by={};runs.forEach(r=>{if(!isRun(r))return;const n=wkOf(dkey(r.start));if(n<1||n>NW)return;const a=by[n]||(by[n]={km:0,max:0,n:0,days:{}});const k=r.dist/1000;a.km+=k;a.max=Math.max(a.max,k);a.n++;const dk=dkey(r.start);a.days[dk]=(a.days[dk]||0)+k});return by}
+function curW(){return wkOf(dkey(Date.now()))}
+function wStatus(w,cur,a,p){
+  if(w>cur)return['予定','todo'];
+  if(w===cur)return a>=p?['達成','ok']:['進行中','live'];
+  if(a>=p*0.95)return['達成','ok'];if(a>=p*0.7)return['やや不足','short'];return['未達','miss'];
+}
+const f1=v=>(Math.round(v*10)/10).toFixed(1);
+// 1週間の型（計画書「1週間の型」より）
+function dayMenu(p,dow){ // dow: 0=日
+  const ext=p.pi===1||p.pi===3;
+  if(p.w===NW){return{1:'休み',2:'ジョグ 5km',3:'休み',4:'ジョグ 5km（短く刺激）',5:'休み',6:'ジョグ 3km・準備',0:'大会 42.195km'}[dow]}
+  const t=ext?{1:'休み',2:'ジョグ 8〜10km',3:p.pi===3?'ジョグ 6km or 補強':'補強 or 休み',4:'変化走 or 本番ペース走',5:'休み',6:'ジョグ 8〜10km',0:'ロング走 '+p.long+'km'}
+             :{1:'休み',2:'ジョグ 5〜7km',3:'休み or 補強',4:p.w>=6?'変化走 or ジョグ 5〜6km':'ジョグ 5〜6km',5:'休み',6:'ジョグ 5〜7km',0:'ロング走 '+p.long+'km'};
+  return t[dow];
+}
+const PACE=[['ジョグ',"7'00\"〜7'30\"",'5〜10km・週2〜3回'],['ロング走',"7'15\"〜7'45\"",'計画のロング距離・週1回（日曜）'],['変化走',"速め6'15\"〜6'30\"／ゆっくり7'30\"",'1km速め＋1kmゆっくり×3〜5・週1回（12月〜）'],['本番ペース走',"7'00\"〜7'05\"",'15〜20km・強化期に2回'],['30km走',"7'20\"〜7'40\"",'30km・補給も練習・強化期に2回'],['補強','—','スクワット・ランジ・体幹 各10分・週1〜2回']];
+function predict(){ // 直近42日・3km以上のランからリーゲル式で推定
+  const now=Date.now();let best=null,src=null;
+  runs.forEach(r=>{if(!isRun(r)||r.dist<3000||now-new Date(r.start)>42*DMS)return;const t=r.time*Math.pow(42195/r.dist,1.06);if(!best||t<best){best=t;src=r}});
+  return best?{t:best,src}:null;
+}
+function pAlerts(by,cur){
+  const out=[];
+  if(cur>=3&&cur<=51&&!plan.done['shift'+cur]&&!/回復/.test(pw(cur).note)){
+    const s=w=>{const p=pw(w);return wStatus(w,cur,(by[w]||{km:0}).km,p.km)[1]};
+    if(s(cur-1)==='miss'&&s(cur-2)==='miss')out.push({msg:'2週続けて未達です。見直しルールに沿って、今週を回復週に置き換えて以降の計画を1週ずつ後ろへずらせます（調整期3週は固定）。',btn:'回復週に置き換える',fn:()=>shiftPlan(cur)});
+  }
+  // ハーフ大会の結果判定（第17〜24週の21km以上）
+  if(!plan.done.half){
+    let h=null;runs.forEach(r=>{const n=wkOf(dkey(r.start));if(n>=17&&n<=24&&r.dist>=21000&&isRun(r)){const t=r.time/r.dist*21097.5;if(!h||t<h)h=t}});
+    if(h){if(h<=9000&&plan.goal<=18000)out.push({msg:'ハーフ '+fmtT(h)+'：2時間30分以内なので5時間目標を維持します。',btn:'確認した',fn:()=>{plan.done.half=1;savePlan();renderPlan()}});
+      else if(h>9000&&plan.goal<19800)out.push({msg:'ハーフ '+fmtT(h)+'：2時間30分を超えたため、目標を5時間30分（7\'49"/km）に切り替えるルールです。',btn:'5時間30分に切り替える',fn:()=>{plan.goal=19800;plan.done.half=1;savePlan();renderPlan()}})}
+  }
+  return out;
+}
+function shiftPlan(cur){
+  const old={};for(let w=cur-1;w<=51;w++)old[w]=pw(w);
+  for(let w=51;w>cur;w--){const o=old[w-1];plan.ov[w]={km:o.km,long:o.long,note:o.note}}
+  const pv=old[cur-1];plan.ov[cur]={km:Math.round(pv.km*0.8),long:Math.round(pv.long*0.8),note:'回復週（2週続けて未達のため差し替え）'};
+  plan.done['shift'+cur]=1;savePlan();renderPlan();notify('第'+cur+'週を回復週に置き換え、以降を1週ずつ後ろへずらしました。');
+}
+let pChart=null;
+function renderPlan(){
+  const by=pAgg(),today=dkey(Date.now()),cur0=curW(),cur=Math.min(Math.max(cur0,1),NW);
+  const left=Math.round((ymdU(plan.race)-ymdU(today))/DMS);
+  const pr=predict(),gp=plan.goal/42.195;
+  let h='<div class="bibc"><div class="bibt"><span>FUKUOKA MARATHON '+plan.race.slice(0,4)+'</span><span>42.195km</span></div><div class="bibb"><div><b class="bh">完走ロードマップ</b><small>大会日 '+mdS(plan.race)+'（'+WD[new Date(ymdU(plan.race)).getUTCDay()]+'）・目標 '+fmtT(plan.goal)+'（'+fmtP(gp)+'/km）</small><button class="ghost sm" id="bRace">大会・目標を設定</button></div><div class="cd"><small>大会まで</small><b>'+Math.max(0,left)+'</b><span>日</span></div></div></div>';
+  pAlerts(by,cur0).forEach((a,i)=>{h+='<div class="notice al">'+a.msg+'<button class="go sm" data-al="'+i+'">'+a.btn+'</button></div>'});
+  if(cur0<1)h+='<div class="notice">計画開始は '+mdS(wkStart(1))+'（月）からです。</div>';
+  if(cur0>NW)h+='<div class="notice">大会週を過ぎました。お疲れさまでした！ 次の大会に向けて大会日を設定し直すと、計画を引き継げます。</div>';
+  // 今週
+  const p=pw(cur),a=by[cur]||{km:0,max:0,days:{}},pct=p.km?Math.min(100,a.km/p.km*100):0;
+  const ws=wkStart(cur),we=uStr(ymdU(ws)+6*DMS);
+  h+='<div class="card"><div class="wh"><h3 style="margin:0">今週　第'+cur+'週・'+mdS(ws)+'〜'+mdS(we)+'</h3><span class="ph">'+p.phase+'</span></div>'
+   +'<div class="wbig"><b>'+f1(a.km)+'</b><span>/ '+p.km+' km</span></div><div class="pbar"><i style="width:'+pct.toFixed(0)+'%"></i></div>'
+   +'<div class="grid3" style="margin:10px 0 6px"><div class="stat"><small>残り</small><b>'+(p.km-a.km>0?f1(p.km-a.km):'達成')+'</b><em>'+(p.km-a.km>0?'km':'')+'</em></div><div class="stat"><small>ロング走 目標</small><b>'+p.long+'</b><em>km</em></div><div class="stat"><small>今週の最長</small><b>'+(a.max?f1(a.max):'--')+'</b><em>km</em></div></div>'
+   +(p.note?'<div class="pnote">'+p.note+'</div>':'');
+  // 1週間のメニュー
+  h+='<table class="wk">';
+  for(let i=0;i<7;i++){const dk=uStr(ymdU(ws)+i*DMS),dow=(i+1)%7,done=a.days&&a.days[dk];
+    h+='<tr class="'+(dk===today?'td':'')+'"><td>'+WD[dow]+' <small>'+mdS(dk)+'</small></td><td>'+dayMenu(p,dow)+'</td><td>'+(done?'<b class="up">'+f1(done)+'km</b>':(dk<today&&!/休み$/.test(dayMenu(p,dow))?'<small>—</small>':''))+'</td></tr>'}
+  h+='</table><p class="hint">平日に走れなかった分を週末にまとめて取り返さない。足りない週はそのまま次へ。</p></div>';
+  // 累計・予想
+  let tA=0,tP=0,lg=0;for(let w=1;w<=Math.min(cur0,NW);w++)tP+=pw(w).km;Object.keys(by).forEach(k=>{if(+k<=cur){tA+=by[k].km;lg=Math.max(lg,by[k].max)}});
+  h+='<div class="grid2" style="margin-bottom:12px"><div class="stat"><small>累計 実績 / 計画</small><b>'+f1(tA)+'</b><em>/ '+f1(tP)+' km（今週まで）</em></div><div class="stat"><small>達成率</small><b>'+(tP?Math.round(tA/tP*100)+'%':'--')+'</b><em>計画比</em></div>'
+   +'<div class="stat"><small>計画内の最長距離</small><b>'+(lg?f1(lg):'--')+'</b><em>km（目標 30km）</em></div>'
+   +'<div class="stat"><small>現状からの予想タイム</small><b>'+(pr?fmtT(pr.t):'--')+'</b><em>'+(pr?(pr.t<=plan.goal?'<span class="up">目標圏内</span>':'目標まで '+fmtT(pr.t-plan.goal))+'・直近6週の'+km(pr.src.dist)+'kmから推定':'直近6週に3km以上の記録なし')+'</em></div></div>'
+   +'<p class="hint" style="margin-top:-6px">予想タイムは短い距離からの推定ほど甘く出ます。30km走ができる頃から精度が上がります。</p>';
+  // グラフ
+  h+='<div class="card"><h3>週ごとの計画と実績（横にスクロール）</h3><div class="hs" id="pScroll"><div style="width:'+(NW*16+50)+'px;height:220px;position:relative"><canvas id="cPlan"></canvas></div></div></div>';
+  // 期ごとの進み具合
+  h+='<div class="card"><h3>期ごとの進み具合</h3><table class="pt"><tr><th>期</th><th>期間</th><th>計画</th><th>実績</th><th>ロング最長</th></tr>';
+  PH.forEach((nm,pi)=>{let ws1=null,we1=null,pk=0,ak=0,mx=0,mxp=0;for(let w=1;w<=NW;w++){const q=pw(w);if(q.pi!==pi)continue;if(!ws1)ws1=w;we1=w;pk+=q.km;mxp=Math.max(mxp,q.long);if(by[w]){ak+=by[w].km;mx=Math.max(mx,by[w].max)}}
+    const on=cur>=ws1&&cur<=we1;h+='<tr'+(on?' class="td"':'')+'><td>'+nm+'</td><td>'+mdS(wkStart(ws1))+'〜<br><small>'+(we1-ws1+1)+'週</small></td><td>'+Math.round(pk)+'km</td><td>'+(cur>=ws1?f1(ak)+'km':'')+'</td><td>'+(cur>=ws1?(mx?f1(mx):'--'):'')+' / '+mxp+'</td></tr>'});
+  h+='</table></div>';
+  // 週別の予実
+  h+='<div class="card"><h3>週別の予実（タップで計画修正・体調メモ）</h3><div class="hs"><table class="pt wt"><tr><th>週</th><th>開始</th><th>計画</th><th>実績</th><th>差</th><th>ロング<br><small>計画/最長</small></th><th>状態</th></tr>';
+  let lp=-1;
+  for(let w=1;w<=NW;w++){const q=pw(w),aa=by[w]||{km:0,max:0},st=wStatus(w,cur0,aa.km,q.km),past=w<=cur0,d=aa.km-q.km,m=plan.wm[w];
+    if(q.pi!==lp){h+='<tr class="phr"><td colspan="7">'+q.phase+'</td></tr>';lp=q.pi}
+    h+='<tr data-w="'+w+'" class="'+(w===cur?'td':'')+'"><td>'+w+'</td><td>'+mdS(wkStart(w))+'</td><td class="'+(q.edited?'ed':'')+'">'+q.km+'</td><td>'+(past?f1(aa.km):'')+'</td><td class="'+(w<cur0||(past&&d>=0)?(d>=0?'up':'down'):'')+'">'+(w<cur0||(past&&d>=0)?(d>=0?'+':'')+f1(d):'')+'</td><td>'+q.long+' / '+(past&&aa.max?f1(aa.max):'—')+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td></tr>';
+    if(q.note||m)h+='<tr class="nr" data-w="'+w+'"><td></td><td colspan="6">'+(q.note?esc(q.note):'')+(m?(q.note?'<br>':'')+'<span class="mm">'+(m.kg?m.kg+'kg ':'')+esc(m.memo||'')+'</span>':'')+'</td></tr>'}
+  h+='</table></div><p class="hint">達成＝計画の95%以上、やや不足＝70〜95%、未達＝70%未満。青字は修正済みの計画。</p></div>';
+  // ペース目安とルール
+  h+='<details class="card"><summary>練習の種類とペース目安・ルール</summary><table class="pt" style="margin-top:8px"><tr><th>種類</th><th>ペース</th><th>内容</th></tr>'+PACE.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+'</table>'
+   +'<ul class="rules"><li>練習の8割は会話できる楽なペース。速く走るのは週1回だけ</li><li>週の距離の増加は前週の1割まで。走れても翌週の目標は上げない</li><li>膝・すね・足裏・アキレス腱の痛みが2日続いたら休む。3日以上続けば整形外科へ</li><li>練習の前後に5分ずつ、歩き・動的ストレッチと静的ストレッチ</li><li>シューズは500〜700kmで交換。8月に本番用を用意</li><li>20km以上の練習ではジェルを45分ごとに試す</li><li>気温28℃以上の日は距離を落として時間で管理。水分は15〜20分ごと</li><li>睡眠が5時間を切った日はポイント練習をジョグに</li><li>体重・体調は週1回メモ。疲れが抜けない週は回復週を前倒し</li><li>本番は前半7\'15"に抑え、30km以降に余力を残す</li></ul></details>';
+  $('planBody').innerHTML=h;
+  // イベント
+  $('bRace').onclick=raceDialog;
+  const al=pAlerts(by,cur0);$('planBody').querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>al[+b.dataset.al].fn());
+  $('planBody').querySelectorAll('.wt tr[data-w]').forEach(tr=>tr.onclick=()=>weekDialog(+tr.dataset.w));
+  // グラフ描画
+  if(window.Chart){
+    const labels=[],pk=[],ak=[],cols=[];let lm=null;
+    for(let w=1;w<=NW;w++){const q=pw(w),m=+wkStart(w).split('-')[1];labels.push(m!==lm?m+'月':'');lm=m;pk.push(q.km);ak.push(w<=cur0&&by[w]?+f1(by[w].km):null);cols.push(w===cur?'#ff6b35':'#3ecf8e')}
+    pChart&&pChart.destroy();
+    pChart=new Chart($('cPlan'),{type:'bar',data:{labels,datasets:[{label:'実績',data:ak,backgroundColor:cols,barPercentage:.55,categoryPercentage:1,order:1,grouped:false},{label:'計画',data:pk,backgroundColor:'#3a444e',barPercentage:.9,categoryPercentage:1,order:2,grouped:false}]},
+      options:{maintainAspectRatio:false,animation:false,plugins:{legend:{labels:{boxWidth:10}},tooltip:{callbacks:{title:c=>'第'+(c[0].dataIndex+1)+'週（'+mdS(wkStart(c[0].dataIndex+1))+'〜）',label:c=>c.dataset.label+' '+c.parsed.y+'km'}}},scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0}},y:{beginAtZero:true,suggestedMax:60}}}});
+    const sc=$('pScroll');sc.scrollLeft=Math.max(0,(cur-8)*16);
+  }
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function weekDialog(w){
+  const q=pw(w),b=BASE[w-1],m=plan.wm[w]||{},prev=w>1?pw(w-1).km:null;
+  const body='<label>計画距離（km）'+(prev?'　前週 '+prev+'km':'')+'</label><input type="number" id="wK" step="0.5" inputmode="decimal" value="'+q.km+'"><label>ロング走（km）</label><input type="number" id="wL" step="0.5" inputmode="decimal" value="'+q.long+'"><label>計画メモ</label><input type="text" id="wN" value="'+esc(q.note)+'"><label>体重（kg）・体調メモ（実績）</label><div style="display:flex;gap:8px"><input type="number" id="wKg" step="0.1" inputmode="decimal" value="'+(m.kg||'')+'" style="width:35%"><input type="text" id="wM" value="'+esc(m.memo||'')+'" placeholder="疲れ・痛み・睡眠など"></div>';
+  const r=await ask('第'+w+'週（'+mdS(wkStart(w))+'〜）'+q.phase,{body,ok:'保存',alt:q.edited?'計画を元に戻す':''});
+  if(!r)return;
+  if(r==='alt'){delete plan.ov[w];savePlan();renderPlan();return}
+  const k=parseFloat($('wK').value),l=parseFloat($('wL').value),n=$('wN').value.trim(),kg=parseFloat($('wKg').value),mm=$('wM').value.trim();
+  if(kg>0||mm)plan.wm[w]={kg:kg>0?kg:null,memo:mm};else delete plan.wm[w];
+  if(k>=0&&l>=0){if(k===b[2]&&l===b[3]&&n===b[4])delete plan.ov[w];else plan.ov[w]={km:k,long:l,note:n}}
+  savePlan();renderPlan();
+  if(prev&&k>prev*1.1&&!/大会|調整/.test(q.phase+n))notify('前週（'+prev+'km）から1割を超える増加です。故障予防のルール「週の距離の増加は前週の1割まで」も確認してください。');
+}
+async function raceDialog(){
+  const body='<label>大会日（正式発表で更新）</label><input type="date" id="rD" value="'+plan.race+'"><label>目標タイム（例 5:00:00）</label><input type="text" id="rG" inputmode="numeric" value="'+fmtT(plan.goal)+'"><p style="font-size:12px;color:var(--sub);margin:0 0 10px">計画は大会日を含む週が第54週になるよう配置されます。大会日を変えると全体がその週に合わせて移動します。</p>';
+  const r=await ask('大会・目標の設定',{body,ok:'保存',alt:'計画をすべて初期化'});
+  if(!r)return;
+  if(r==='alt'){if(await ask('計画の修正・体調メモ・大会設定をすべて初期状態に戻しますか？（ランの記録は消えません）',{ok:'初期化する'})){plan={};planInit();savePlan();renderPlan()}return}
+  const d=$('rD').value,g=$('rG').value.trim().split(':').map(Number);
+  if(!d||g.some(isNaN)||g.length<2)return notify('入力内容を確認してください');
+  plan.race=d;plan.goal=g.reduce((a,b)=>a*60+b,0)*(g.length===2?60:1);savePlan();renderPlan();
+}
+function typeSel(id,v){return '<select id="'+id+'" class="sel">'+TYPES.map(t=>'<option'+(t===v?' selected':'')+'>'+t+'</option>').join('')+'</select>'}
+function guessType(distM){const dow=new Date().getDay(),w=curW(),p=w>=1&&w<=NW?pw(w):null;if(distM>=28000)return'30km走';if(dow===0||(p&&distM>=p.long*1000*0.8&&distM>=10000))return'ロング走';return'ジョグ'}
+
 /* ---------- 履歴 ---------- */
 function bestLap(r){return r.laps&&r.laps.length?Math.min(...r.laps):null}
 function renderHist(){
@@ -358,7 +541,7 @@ function renderHist(){
     const rs=g[k],tot=rs.reduce((s,r)=>s+r.dist,0);
     h+='<div class="day"><div class="dayh"><span>'+dlabel(k)+'</span><span>合計 <b>'+km(tot)+' km</b></span></div>';
     rs.slice().reverse().forEach(r=>{const bl=bestLap(r),t=new Date(r.start);
-      h+='<div class="run" data-id="'+r.id+'"><div class="l"><b>'+km(r.dist)+'</b> km<small>'+pad(t.getHours())+':'+pad(t.getMinutes())+' 開始'+(r.manual?'・手動':'')+'</small></div><div class="r"><b>'+fmtP(r.time/(r.dist/1000))+'</b>/km<small>'+fmtT(r.time)+(bl?'・ベスト '+fmtP(bl):'')+'</small></div></div>'});
+      h+='<div class="run" data-id="'+r.id+'"><div class="l"><b>'+km(r.dist)+'</b> km<small>'+pad(t.getHours())+':'+pad(t.getMinutes())+' 開始'+(r.manual?'・手動':'')+'<span class="ttag">'+(r.type||'ジョグ')+'</span></small></div><div class="r"><b>'+fmtP(r.time/(r.dist/1000))+'</b>/km<small>'+fmtT(r.time)+(bl?'・ベスト '+fmtP(bl):'')+'</small></div></div>'});
     h+='</div>';
   });
   $('histList').innerHTML=h;
@@ -370,6 +553,8 @@ function openDetail(id){
   const t=new Date(r.start);
   $('dTitle').textContent=(t.getMonth()+1)+'/'+t.getDate()+'（'+WD[t.getDay()]+'） '+pad(t.getHours())+':'+pad(t.getMinutes());
   $('dStats').innerHTML='<div class="stat"><small>距離</small><b>'+km(r.dist)+'</b><em>km</em></div><div class="stat"><small>タイム</small><b>'+fmtT(r.time)+'</b></div><div class="stat"><small>平均ペース</small><b>'+fmtP(r.time/(r.dist/1000))+'</b><em>/km</em></div>';
+  $('dType').innerHTML=TYPES.map(t=>'<option'+(t===(r.type||'ジョグ')?' selected':'')+'>'+t+'</option>').join('');
+  $('dType').onchange=e=>{r.type=e.target.value;saveRuns();renderHist()};
   $('dLaps').innerHTML=r.laps.length?lapRows(r.laps):'<tr><td class="empty" style="padding:12px 0">1km未満のためラップはありません</td></tr>';
   $('detail').classList.remove('hide');
   const has=r.track&&r.track.some(s=>s.length>1);
@@ -441,17 +626,17 @@ function renderProg(){
 $('optVoice').value=String(opt.vint);
 $('optVoice').onchange=e=>{opt.vint=+e.target.value;lsSet(OKEY,opt);if(opt.vint)speak('音声案内を'+(opt.vint===500?'500メートル':'1キロ')+'ごとにしました')};
 $('bManual').onclick=async()=>{
-  const body='<label>日付</label><input type="date" id="mD" value="'+dkey(Date.now())+'"><label>距離（km）</label><input type="number" id="mK" inputmode="decimal" step="0.01" value="5"><label>タイム（例 28:30 / 1:02:10）</label><input type="text" id="mT" inputmode="numeric" placeholder="28:30">';
+  const body='<label>日付</label><input type="date" id="mD" value="'+dkey(Date.now())+'"><label>距離（km）</label><input type="number" id="mK" inputmode="decimal" step="0.01" value="5"><label>タイム（例 28:30 / 1:02:10）</label><input type="text" id="mT" inputmode="numeric" placeholder="28:30"><label>練習の種類</label>'+typeSel('mY','ジョグ');
   if(!await ask('手動で記録を追加',{body,ok:'追加'}))return;
-  const ds=$('mD').value,dk=parseFloat($('mK').value),p=$('mT').value.trim().split(':').map(Number);
+  const mty=$('mY').value,ds=$('mD').value,dk=parseFloat($('mK').value),p=$('mT').value.trim().split(':').map(Number);
   const st=new Date(ds+'T07:00:00');
   if(!ds||isNaN(st)||!(dk>0)||!$('mT').value.trim()||p.some(isNaN))return notify('入力内容を確認してください');
   const sec=p.reduce((a,b)=>a*60+b,0);
-  runs.push({id:Date.now(),start:st.toISOString(),dist:Math.round(dk*1000),time:sec,laps:[],track:[],manual:true});
+  runs.push({id:Date.now(),start:st.toISOString(),dist:Math.round(dk*1000),time:sec,laps:[],track:[],manual:true,type:mty});
   saveRuns();renderProg();notify('追加しました');
 };
 $('bExport').onclick=()=>{
-  const b=new Blob([JSON.stringify({app:'runlog',v:1,runs},null,0)],{type:'application/json'});
+  const b=new Blob([JSON.stringify({app:'runlog',v:2,runs,plan},null,0)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='runlog-backup-'+dkey(Date.now()).replace(/-/g,'')+'.json';
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 };
@@ -460,7 +645,8 @@ $('fImport').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();
   rd.onload=()=>{try{const j=JSON.parse(rd.result),arr=Array.isArray(j)?j:j.runs;if(!Array.isArray(arr))throw 0;
     const ids=new Set(runs.map(r=>r.id));let n=0;arr.forEach(r=>{if(r&&r.id&&r.start&&!ids.has(r.id)){runs.push(r);n++}});
-    saveRuns();renderProg();notify(n+'件の記録を読み込みました')}catch(err){notify('読み込めないファイルです')}};
+    let pm='';if(j.plan&&j.plan.race){plan=j.plan;planInit();savePlan();pm='（ロードマップの計画・体調メモも復元）'}
+    saveRuns();renderProg();notify(n+'件の記録を読み込みました'+pm)}catch(err){notify('読み込めないファイルです')}};
   rd.readAsText(f);e.target.value='';
 };
 
@@ -472,6 +658,7 @@ function showView(v){
   if(v==='run'&&map)setTimeout(()=>map.invalidateSize(),50);
   if(v==='hist')renderHist();
   if(v==='prog')renderProg();
+  if(v==='plan')renderPlan();
   window.scrollTo(0,0);
 }
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showView(b.dataset.v));
